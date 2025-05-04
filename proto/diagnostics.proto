@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package edc;
+
+service DiagnosticsService {
+  rpc GetSystemStatus (Empty) returns (SystemStatus);
+  rpc ControlService (ServiceCommand) returns (CommandResult);
+}
+
+message Empty {}
+
+message SystemStatus {
+  float cpu_usage = 1;
+  float memory_usage = 2;
+  string uptime = 3;
+}
+
+message ServiceCommand {
+  string service_name = 1;
+  string action = 2; // "start", "stop", "restart"
+}
+
+message CommandResult {
+  bool success = 1;
+  string message = 2;
+}
