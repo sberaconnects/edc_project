@@ -1,26 +1,30 @@
+#include "diagnostics_service_impl.h"
 #include "diagnostics.grpc.pb.h"
 #include <grpcpp/grpcpp.h>
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
 
+using edc::CommandResult;
+using edc::DiagnosticsService;
+using edc::Empty;
+using edc::ServiceCommand;
+using edc::SystemStatus;
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using edc::DiagnosticsService;
-using edc::Empty;
-using edc::SystemStatus;
-using edc::ServiceCommand;
-using edc::CommandResult;
 
-class DiagnosticsServiceImpl final : public DiagnosticsService::Service {
+class DiagnosticsServiceImpl final : public DiagnosticsService::Service
+{
 public:
-    Status GetSystemStatus(ServerContext*, const Empty*, SystemStatus* reply) override {
+    Status GetSystemStatus(ServerContext *, const Empty *, SystemStatus *reply) override
+    {
         std::ifstream meminfo("/proc/meminfo");
         float totalMem = 0, freeMem = 0;
         std::string line;
-        while (getline(meminfo, line)) {
+        while (getline(meminfo, line))
+        {
             if (line.find("MemTotal") != std::string::npos)
                 sscanf(line.c_str(), "MemTotal: %f", &totalMem);
             else if (line.find("MemAvailable") != std::string::npos)
@@ -33,7 +37,8 @@ public:
         return Status::OK;
     }
 
-    Status ControlService(ServerContext*, const ServiceCommand* request, CommandResult* response) override {
+    Status ControlService(ServerContext *, const ServiceCommand *request, CommandResult *response) override
+    {
         std::string command = "systemctl " + request->action() + " " + request->service_name();
         int result = system(command.c_str());
         response->set_success(result == 0);
@@ -42,7 +47,8 @@ public:
     }
 };
 
-void RunServer() {
+void RunServer()
+{
     std::string server_address("0.0.0.0:50051");
     DiagnosticsServiceImpl service;
     grpc::ServerBuilder builder;
