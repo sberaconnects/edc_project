@@ -34,7 +34,7 @@ Python CLI / Tools
 |  - Service Control     |
 +------------------------+
         │
-Embedded Linux (Yocto or Debian)
+Embedded Linux (Yocto or Fedora)
 ```
 
 ---
@@ -47,6 +47,11 @@ Embedded Linux (Yocto or Debian)
 mkdir build && cd build
 cmake ../daemon
 make
+```
+
+🛠️ **Note:** Make sure the include path is set correctly. The CMakeLists.txt uses:
+```cmake
+include_directories(${Protobuf_INCLUDE_DIRS} ./include ../proto)
 ```
 
 ### 2. Run the Server
@@ -62,14 +67,16 @@ make
 pip install grpcio grpcio-tools
 
 # Generate gRPC bindings
-python -m grpc_tools.protoc -I../proto --python_out=client --grpc_python_out=client ../proto/diagnostics.proto
+python -m grpc_tools.protoc -I./proto --python_out=client --grpc_python_out=client ./proto/diagnostics.proto
 
 # Run CLI
 python client/cli.py status
-python client/cli.py control --service sshd --action restart
+python client/cli.py control --service crond --action restart
 ```
 
-### 4. Log Metrics
+---
+
+## 📊 Log Metrics
 
 ```bash
 python tools/metrics_logger.py --interval 3 --output metrics.csv
@@ -103,14 +110,33 @@ python tests/test_client.py
 
 ```
 edc_project/
-├── daemon/         # C++ source and CMake
-├── client/         # Python CLI tool
-├── tools/          # Metrics logger
-├── proto/          # .proto gRPC schema
-├── tests/          # gRPC interface tests
-├── systemd/        # edc_daemon.service
-├── yocto-layer/    # meta-edc for integration
-└── README.md
+├── client
+│   └── cli.py
+├── daemon
+│   ├── CMakeLists.txt
+│   ├── include
+│   │   └── diagnostics_service_impl.h
+│   └── src
+│       ├── diagnostics_service_impl.cpp
+│       └── main.cpp
+├── proto
+│   └── diagnostics.proto
+├── README.md
+├── systemd
+│   └── edc_daemon.service
+├── tests
+│   └── test_client.py
+├── tools
+│   └── metrics_logger.py
+└── yocto-layer
+    └── meta-edc
+        └── recipes-edc
+            └── edc-daemon
+                ├── edc-daemon_1.0.bb
+                └── edc_daemon.service
+
+13 directories, 12 files
+
 ```
 
 ---

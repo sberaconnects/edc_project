@@ -1,7 +1,7 @@
+import sys
+import os
 import unittest
-import grpc
-from diagnostics_pb2 import Empty, ServiceCommand
-from diagnostics_pb2_grpc import DiagnosticsServiceStub
+
 
 class TestEDCClient(unittest.TestCase):
     @classmethod
@@ -21,9 +21,15 @@ class TestEDCClient(unittest.TestCase):
         self.assertIn(response.success, [True, False])
 
     def test_invalid_service_control(self):
-        request = ServiceCommand(service_name="invalid_service_xyz", action="restart")
+        request = ServiceCommand(
+            service_name="invalid_service_xyz", action="restart")
         response = self.stub.ControlService(request)
         self.assertFalse(response.success)
 
+
 if __name__ == '__main__':
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'client'))
+    import grpc
+    from diagnostics_pb2 import Empty, ServiceCommand
+    from diagnostics_pb2_grpc import DiagnosticsServiceStub
     unittest.main()
